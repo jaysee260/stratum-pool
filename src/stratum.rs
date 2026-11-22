@@ -1,7 +1,7 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Request {
     id: Value,
     method: String,
@@ -33,6 +33,13 @@ enum Message {
     Subscribe(Subscribe),
     Authorize(Authorize),
     Submit(Submit),
+}
+
+#[derive(Debug, Serialize)]
+struct Response {
+    id: Value,
+    result: Value,
+    error: Value
 }
 
 fn parse_subscribe(request: &Request) -> Result<Subscribe, String> {

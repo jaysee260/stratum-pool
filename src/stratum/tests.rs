@@ -1,3 +1,5 @@
+use serde_json::json;
+
 use super::*;
 
 #[test]
@@ -165,4 +167,18 @@ fn rejects_invalid_message_type() {
     let input = r#"{ "id": 1, "method": "invalid.method", "params": []}"#;
     let request: Request = serde_json::from_str(input).unwrap();
     assert!(parse_message(&request).is_err())
+}
+
+#[test]
+fn serializes_response() {
+    let response = Response { id: json!(1), result: json!(true), error: json!(null) };
+    let text = serde_json::to_string(&response).unwrap();
+    assert_eq!(text, r#"{"id":1,"result":true,"error":null}"#)
+}
+
+#[test]
+fn serializes_set_difficulty_notification() {
+    let request = Request { id: json!(null), method: "mining.set_difficulty".to_string(), params: vec![json!(512)] };
+    let text = serde_json::to_string(&request).unwrap();
+    assert_eq!(text, r#"{"id":null,"method":"mining.set_difficulty","params":[512]}"#)
 }
