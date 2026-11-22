@@ -2,25 +2,25 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Request {
+pub struct Request {
     id: Value,
     method: String,
     params: Vec<Value>,
 }
 
 #[derive(Debug)]
-struct Subscribe {
+pub struct Subscribe {
     user_agent: Option<String>,
 }
 
 #[derive(Debug)]
-struct Authorize {
+pub struct Authorize {
     worker_name: String,
     password: Option<String>,
 }
 
 #[derive(Debug)]
-struct Submit {
+pub struct Submit {
     worker_name: String,
     job_id: String,
     extranonce2: String,
@@ -29,14 +29,14 @@ struct Submit {
 }
 
 #[derive(Debug)]
-enum Message {
+pub enum Message {
     Subscribe(Subscribe),
     Authorize(Authorize),
     Submit(Submit),
 }
 
 #[derive(Debug, Serialize)]
-struct Response {
+pub struct Response {
     id: Value,
     result: Value,
     error: Value
@@ -72,7 +72,7 @@ fn parse_submit(request: &Request) -> Result<Submit, String> {
     })
 }
 
-fn parse_message(request: &Request) -> Result<Message, String> {
+pub fn parse_message(request: &Request) -> Result<Message, String> {
     match request.method.as_str() {
         "mining.subscribe" => Ok(Message::Subscribe(parse_subscribe(request)?)),
         "mining.authorize" => Ok(Message::Authorize(parse_authorize(request)?)),
