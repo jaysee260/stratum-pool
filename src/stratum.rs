@@ -20,33 +20,34 @@ struct Authorize {
 }
 
 fn parse_subscribe(request: &Request) -> Result<Subscribe, String> {
-    match request.params.first() {
-        None => Ok(Subscribe { user_agent: None }),
-        Some(value) => match value.as_str() { // is it a string?
-            None => Err("user_agent must be a string".to_string()),
-            Some(name) => Ok(Subscribe { user_agent: Some(name.to_string()) } ),
-        }
-    }
+    let user_agent = extract_optional_field(&request.params, 0, "user_agent")?;
+    Ok(Subscribe { user_agent })
 }
 
 fn parse_authorize(request: &Request) -> Result<Authorize, String> {
-    let worker_name = match request.params.first() {
-        None => return Err("worker_name cannot be empty".to_string()),
-        Some(value) => match value.as_str() {
-            None => return Err("worker_name must be a string".to_string()),
-            Some(text) => text.to_string(),
-        },
-    };
-
-    let password = match request.params.get(1) {
-        None => None,
-        Some(value) => match value.as_str() { // is it a string?
-            None => return Err("password must be a string".to_string()),
-            Some(text) => Some(text.to_string()),
-        },
-    };
-
+    let worker_name = extract_required_field(&request.params, 0, "worker_name")?;
+    let password = extract_optional_field(&request.params, 1, "password")?;
     Ok(Authorize { worker_name, password })
+}
+
+fn extract_required_field(params: &[Value], index: usize, field: &str) -> Result<String, String> {
+    match params.get(index) {
+        None => Err(format!("{field} cannot be empty")),
+        Some(value) => match value.as_str() {
+            None => Err(format!("{field} must be a string")),
+            Some(text) => Ok(text.to_string()),
+        },
+    }
+}
+
+fn extract_optional_field(params: &[Value], index: usize, field: &str) -> Result<Option<String>, String> {
+    match params.get(index) {
+        None => Ok(None),
+        Some(value) => match value.as_str() { // is it a string?
+            None => Err(format!("{field} must be a string")),
+            Some(text) => Ok(Some(text.to_string())),
+        },
+    }
 }
 
 #[cfg(test)]
