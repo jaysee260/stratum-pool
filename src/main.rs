@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, Write};
 
 use serde_json::json;
 
-use crate::stratum::parse_message;
+use crate::stratum::{Message, parse_message};
 
 mod stratum;
 
@@ -34,10 +34,21 @@ fn main() -> std::io::Result<()> {
             }
         };
 
+        
         println!("received message: {message:?}");
+        let result = match message {
+            Message::Subscribe(_) => json!([
+                [["mining.set_difficulty", "1"], ["mining.notify", "1"]],
+                "00000001",
+                8
+            ]),
+            Message::Authorize(_) => json!(true),
+            Message::Submit(_) => json!(true),
+        };
+
         let response = stratum::Response {
             id: request.id.clone(),
-            result: json!(true),
+            result,
             error: json!(null),
         };
 

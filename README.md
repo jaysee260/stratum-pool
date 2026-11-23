@@ -8,8 +8,9 @@ It is not ready for real mining. Do not point hardware at it on mainnet.
 
 ## Status
 
-The pool can read and parse what a miner sends, and answers each message with
-a placeholder reply that echoes its id. The replies do not carry real data yet.
+The pool can read and parse what a miner sends, and answers each message
+according to its type. The values in the replies are placeholders: a fixed
+`extranonce1`, and `true` for every authorize and submit.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -53,7 +54,7 @@ received message: Subscribe(Subscribe { user_agent: Some("bitaxe/BM1366/v2.4.0")
 The second terminal receives the reply:
 
 ```
-{"id":1,"result":true,"error":null}
+{"id":1,"result":[[["mining.set_difficulty","1"],["mining.notify","1"]],"00000001",8],"error":null}
 ```
 
 A line that is not valid, such as `GET / HTTP/1.1`, prints an error and the
