@@ -15,10 +15,22 @@ fn main() -> std::io::Result<()> {
         let (stream, address) = listener.accept()?;
         println!("connection from {address}");
 
-        let mut writer = stream.try_clone()?;
+        let mut writer = match stream.try_clone() {
+            Ok(writer) => writer,
+            Err(error) => {
+                println!("clone failed: {error}");
+                continue;
+            }
+        };
         let reader = BufReader::new(stream);
         for line in reader.lines() {
-            let line = line?; // shadowing?
+            let line = match line {
+                Ok(line) => line,
+                Err(error) => {
+                    println!("read failed: {error}");
+                    break;
+                }
+            };
             let request: stratum::Request = match serde_json::from_str(&line) {
                 Ok(request) => request,
                 Err(error) => {
@@ -54,7 +66,10 @@ fn main() -> std::io::Result<()> {
             };
 
             let text = serde_json::to_string(&response).unwrap();
-            writeln!(writer, "{text}")?;
+            if let Err(error) = writeln!(writer, "{text}") {
+                println!("write failed: {error}");
+                break;
+            };
 
             if is_authorize {
                 let notification = stratum::Request {
@@ -63,7 +78,10 @@ fn main() -> std::io::Result<()> {
                     params: vec![json!(1)],
                 };
                 let text = serde_json::to_string(&notification).unwrap();
-                writeln!(writer, "{text}")?;
+                if let Err(error) = writeln!(writer, "{text}") {
+                    println!("write failed: {error}");
+                    break;
+                }
             }
         }
 
