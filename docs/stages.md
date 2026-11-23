@@ -1,6 +1,6 @@
 # Build stages
 
-Last updated: Nov 22, 2026, at commit `f0359fd`.
+Last updated: Nov 22, 2026, at commit `80223a6`.
 
 The pool is built in stages, each one small enough to finish and test before
 the next begins. Update the status and checklists here as work lands.
@@ -62,7 +62,7 @@ Accept a miner's connection and hold a conversation with it.
 - [x] Read the connection line by line
 - [x] Parse each line and log the typed message
 - [x] Log bad lines as errors and keep the connection going
-- [ ] Reply to each message with a `Response` that echoes its id
+- [x] Reply to each message with a `Response` that echoes its id
 - [ ] Reply per message type; `mining.subscribe` returns `extranonce1` and the
       `extranonce2` size
 - [ ] Send `mining.set_difficulty` after authorize

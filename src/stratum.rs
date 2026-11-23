@@ -3,7 +3,7 @@ use serde_json::Value;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Request {
-    id: Value,
+    pub id: Value,
     method: String,
     params: Vec<Value>,
 }
@@ -37,9 +37,9 @@ pub enum Message {
 
 #[derive(Debug, Serialize)]
 pub struct Response {
-    id: Value,
-    result: Value,
-    error: Value
+    pub id: Value,
+    pub result: Value,
+    pub error: Value
 }
 
 fn parse_subscribe(request: &Request) -> Result<Subscribe, String> {

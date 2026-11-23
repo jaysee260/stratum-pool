@@ -8,7 +8,8 @@ It is not ready for real mining. Do not point hardware at it on mainnet.
 
 ## Status
 
-The pool can read and parse what a miner sends. It does not reply yet.
+The pool can read and parse what a miner sends, and answers each message with
+a placeholder reply that echoes its id. The replies do not carry real data yet.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -29,8 +30,8 @@ Run the tests:
 cargo test
 ```
 
-Run the listener, which accepts one connection on port 3333 and prints each
-message it receives:
+Run the listener, which accepts one connection on port 3333, prints each
+message it receives and replies to it:
 
 ```
 cargo run
@@ -49,13 +50,19 @@ The first terminal prints the parsed message:
 received message: Subscribe(Subscribe { user_agent: Some("bitaxe/BM1366/v2.4.0") })
 ```
 
+The second terminal receives the reply:
+
+```
+{"id":1,"result":true,"error":null}
+```
+
 A line that is not valid, such as `GET / HTTP/1.1`, prints an error and the
-listener carries on.
+listener carries on. It gets no reply yet.
 
 ## Layout
 
 ```
-src/main.rs            TCP listener: reads lines, parses them, logs the result
+src/main.rs            TCP listener: reads lines, parses them, logs and replies
 src/stratum.rs         Stratum messages: types, parsers, serialization
 src/stratum/tests.rs   Tests for the codec
 docs/stages.md         Build stages and their status
