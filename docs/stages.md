@@ -1,6 +1,6 @@
 # Build stages
 
-Last updated: Nov 22, 2026, at commit `6bd37b5`.
+Last updated: Nov 22, 2026, at commit `2fd8a42`.
 
 The pool is built in stages, each one small enough to finish and test before
 the next begins. Update the status and checklists here as work lands.

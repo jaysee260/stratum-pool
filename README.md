@@ -21,7 +21,8 @@ according to its type. The values in the replies are placeholders: a fixed
 | 5 | Bitcoin Core integration | Not started |
 
 Each stage's checklist and the later stages are in
-[docs/stages.md](docs/stages.md).
+[docs/stages.md](docs/stages.md). What each Stratum message means is explained
+in [docs/messages.md](docs/messages.md).
 
 ## Try it
 
@@ -67,6 +68,7 @@ src/main.rs            TCP listener: reads lines, parses them, logs and replies
 src/stratum.rs         Stratum messages: types, parsers, serialization
 src/stratum/tests.rs   Tests for the codec
 docs/stages.md         Build stages and their status
+docs/messages.md       What each Stratum message means
 ```
 
 ## How a line is handled
