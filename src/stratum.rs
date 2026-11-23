@@ -4,8 +4,8 @@ use serde_json::Value;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Request {
     pub id: Value,
-    method: String,
-    params: Vec<Value>,
+    pub method: String,
+    pub params: Vec<Value>,
 }
 
 #[derive(Debug)]

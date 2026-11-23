@@ -36,6 +36,7 @@ fn main() -> std::io::Result<()> {
 
         
         println!("received message: {message:?}");
+        let is_authorize = matches!(message, Message::Authorize(_));
         let result = match message {
             Message::Subscribe(_) => json!([
                 [["mining.set_difficulty", "1"], ["mining.notify", "1"]],
@@ -54,6 +55,16 @@ fn main() -> std::io::Result<()> {
 
         let text = serde_json::to_string(&response).unwrap();
         writeln!(writer, "{text}")?;
+
+        if is_authorize {
+            let notification = stratum::Request {
+                id: json!(null),
+                method: "mining.set_difficulty".to_string(),
+                params: vec![json!(1)],
+            };
+            let text = serde_json::to_string(&notification).unwrap();
+            writeln!(writer, "{text}")?;
+        }
     }
 
     println!("connection closed");
