@@ -39,7 +39,7 @@ pub enum Message {
 pub struct Response {
     pub id: Value,
     pub result: Value,
-    pub error: Value
+    pub error: Value,
 }
 
 fn parse_subscribe(request: &Request) -> Result<Subscribe, String> {

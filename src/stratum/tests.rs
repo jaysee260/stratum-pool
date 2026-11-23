@@ -171,14 +171,25 @@ fn rejects_invalid_message_type() {
 
 #[test]
 fn serializes_response() {
-    let response = Response { id: json!(1), result: json!(true), error: json!(null) };
+    let response = Response {
+        id: json!(1),
+        result: json!(true),
+        error: json!(null),
+    };
     let text = serde_json::to_string(&response).unwrap();
     assert_eq!(text, r#"{"id":1,"result":true,"error":null}"#)
 }
 
 #[test]
 fn serializes_set_difficulty_notification() {
-    let request = Request { id: json!(null), method: "mining.set_difficulty".to_string(), params: vec![json!(512)] };
+    let request = Request {
+        id: json!(null),
+        method: "mining.set_difficulty".to_string(),
+        params: vec![json!(512)],
+    };
     let text = serde_json::to_string(&request).unwrap();
-    assert_eq!(text, r#"{"id":null,"method":"mining.set_difficulty","params":[512]}"#)
+    assert_eq!(
+        text,
+        r#"{"id":null,"method":"mining.set_difficulty","params":[512]}"#
+    )
 }
