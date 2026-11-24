@@ -32,8 +32,8 @@ Run the tests:
 cargo test
 ```
 
-Run the listener, which accepts one connection on port 3333, prints each
-message it receives and replies to it:
+Run the listener, which accepts connections on port 3333 one at a time, prints
+each message it receives and replies to it:
 
 ```
 cargo run

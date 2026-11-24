@@ -1,6 +1,6 @@
 # Build stages
 
-Last updated: Nov 22, 2026, at commit `2fd8a42`.
+Last updated: Nov 23, 2026, at commit `79c960d`.
 
 The pool is built in stages, each one small enough to finish and test before
 the next begins. Update the status and checklists here as work lands.
@@ -58,15 +58,16 @@ Left for later stages:
 
 Accept a miner's connection and hold a conversation with it.
 
-- [x] Listen on `127.0.0.1:3333` and accept one connection
+- [x] Listen on `127.0.0.1:3333` and accept a connection
 - [x] Read the connection line by line
 - [x] Parse each line and log the typed message
 - [x] Log bad lines as errors and keep the connection going
 - [x] Reply to each message with a `Response` that echoes its id
 - [x] Reply per message type; `mining.subscribe` returns `extranonce1` and the
       `extranonce2` size
-- [ ] Send `mining.set_difficulty` after authorize
-- [ ] Accept connections in a loop
+- [x] Send `mining.set_difficulty` after authorize
+- [x] Accept connections in a loop
+- [x] End only the affected connection when a read or write fails
 - [ ] Handle several connections at once (move to tokio)
 - [ ] Limit the length of a line
 - [ ] Capture traffic from a real miner

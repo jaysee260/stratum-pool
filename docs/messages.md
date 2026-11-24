@@ -16,7 +16,7 @@ that stays open.
 | `mining.subscribe` | Miner to pool | "I'm here and I want work" | Handled, with a fixed `extranonce1` |
 | `mining.authorize` | Miner to pool | "This is who I am" | Handled, always answers `true` |
 | `mining.submit` | Miner to pool | "I found a good one" | Parsed, always answers `true`; not checked yet |
-| `mining.set_difficulty` | Pool to miner | "Only show me tickets this good" | Not sent yet |
+| `mining.set_difficulty` | Pool to miner | "Only show me tickets this good" | Sent after authorize, fixed at 1 |
 | `mining.notify` | Pool to miner | "Here's the job" | Not sent yet |
 
 ## Miner to pool
@@ -143,7 +143,7 @@ miner: submit             ->  pool: true
 ...and so on, for days
 ```
 
-The pool handles the first two lines today. See [stages.md](stages.md) for
+The pool handles the first three lines today. See [stages.md](stages.md) for
 what comes next.
 
 ## Not covered here
