@@ -1,6 +1,6 @@
 # Build stages
 
-Last updated: Nov 23, 2026, at commit `79c960d`.
+Last updated: Nov 25, 2026.
 
 The pool is built in stages, each one small enough to finish and test before
 the next begins. Update the status and checklists here as work lands.
@@ -68,8 +68,10 @@ Accept a miner's connection and hold a conversation with it.
 - [x] Send `mining.set_difficulty` after authorize
 - [x] Accept connections in a loop
 - [x] End only the affected connection when a read or write fails
-- [ ] Handle several connections at once (move to tokio)
-- [ ] Limit the length of a line
+- [x] Handle several connections at once (move to tokio)
+- [x] Give each connection its own `extranonce1`
+- [x] Limit the length of a line (4,096 bytes)
+- [ ] Listen on `0.0.0.0` so other devices can connect
 - [ ] Capture traffic from a real miner
 
 ## Stage 4: Share validation

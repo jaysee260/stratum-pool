@@ -1,4 +1,5 @@
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::net::tcp::OwnedReadHalf;
 use tokio::net::{TcpListener, TcpStream};
 
 use serde_json::json;
@@ -6,6 +7,8 @@ use serde_json::json;
 use crate::stratum::{parse_message, Message};
 
 mod stratum;
+
+const MAX_LINE_BYTES: u64 = 4096;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -23,17 +26,10 @@ async fn main() -> std::io::Result<()> {
 
 async fn handle_connection(stream: TcpStream, extranonce1: u32) {
     let (reader, mut writer) = stream.into_split();
-    let mut lines = BufReader::new(reader).lines();
+    let mut reader = BufReader::new(reader);
 
-    loop {
-        let line = match lines.next_line().await {
-            Ok(Some(line)) => line,
-            Ok(None) => break,
-            Err(error) => {
-                println!("read failed: {error}");
-                break;
-            }
-        };
+    while let Some(line) = read_line(&mut reader).await {
+        // todo: parse_line
         let request: stratum::Request = match serde_json::from_str(&line) {
             Ok(request) => request,
             Err(error) => {
@@ -89,4 +85,22 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
     }
 
     println!("connection closed");
+}
+
+async fn read_line(reader: &mut BufReader<OwnedReadHalf>) -> Option<String> {
+    let mut line = String::new();
+    let mut limited = reader.take(MAX_LINE_BYTES);
+
+    match limited.read_line(&mut line).await {
+        Ok(0) => None,
+        Ok(_) if !line.ends_with('\n') => {
+            println!("line too long or incomplete, closing");
+            None
+        }
+        Ok(_) => Some(line),
+        Err(error) => {
+            println!("read failed: {error}");
+            None
+        }
+    }
 }

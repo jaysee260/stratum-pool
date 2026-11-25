@@ -9,8 +9,9 @@ It is not ready for real mining. Do not point hardware at it on mainnet.
 ## Status
 
 The pool can read and parse what a miner sends, and answers each message
-according to its type. The values in the replies are placeholders: a fixed
-`extranonce1`, and `true` for every authorize and submit.
+according to its type. Several miners can be connected at once, each with its
+own `extranonce1`. Authorize and submit are not checked yet: both always get
+`true`.
 
 | Stage | What | Status |
 | --- | --- | --- |
@@ -32,8 +33,8 @@ Run the tests:
 cargo test
 ```
 
-Run the listener, which accepts connections on port 3333 one at a time, prints
-each message it receives and replies to it:
+Run the listener, which accepts connections on port 3333, prints each message
+it receives and replies to it:
 
 ```
 cargo run
@@ -64,7 +65,7 @@ listener carries on. It gets no reply yet.
 ## Layout
 
 ```
-src/main.rs            TCP listener: reads lines, parses them, logs and replies
+src/main.rs            TCP listener (tokio): one task per connection
 src/stratum.rs         Stratum messages: types, parsers, serialization
 src/stratum/tests.rs   Tests for the codec
 docs/stages.md         Build stages and their status
@@ -80,7 +81,8 @@ docs/messages.md       What each Stratum message means
 3. The parser turns the positional `params` into a typed `Subscribe`,
    `Authorize` or `Submit`.
 
-A bad line always becomes an error to log. It never panics the server.
+A bad line always becomes an error to log. It never panics the server. A line
+longer than 4,096 bytes closes that connection.
 
 ## References
 

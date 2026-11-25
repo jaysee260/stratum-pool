@@ -13,7 +13,7 @@ that stays open.
 
 | Message | Direction | Meaning | Status |
 | --- | --- | --- | --- |
-| `mining.subscribe` | Miner to pool | "I'm here and I want work" | Handled, with a fixed `extranonce1` |
+| `mining.subscribe` | Miner to pool | "I'm here and I want work" | Handled; each connection gets its own `extranonce1` |
 | `mining.authorize` | Miner to pool | "This is who I am" | Handled, always answers `true` |
 | `mining.submit` | Miner to pool | "I found a good one" | Parsed, always answers `true`; not checked yet |
 | `mining.set_difficulty` | Pool to miner | "Only show me tickets this good" | Sent after authorize, fixed at 1 |
