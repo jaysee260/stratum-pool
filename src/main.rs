@@ -11,15 +11,17 @@ mod stratum;
 async fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("127.0.0.1:3333").await?;
     println!("listening on 127.0.0.1:3333");
+    let mut next_id: u32 = 1;
 
     loop {
         let (stream, address) = listener.accept().await?;
         println!("connection from {address}");
-        tokio::spawn(handle_connection(stream));
+        tokio::spawn(handle_connection(stream, next_id));
+        next_id += 1;
     }
 }
 
-async fn handle_connection(stream: TcpStream) {
+async fn handle_connection(stream: TcpStream, extranonce1: u32) {
     let (reader, mut writer) = stream.into_split();
     let mut lines = BufReader::new(reader).lines();
 
@@ -53,7 +55,7 @@ async fn handle_connection(stream: TcpStream) {
         let result = match message {
             Message::Subscribe(_) => json!([
                 [["mining.set_difficulty", "1"], ["mining.notify", "1"]],
-                "00000001",
+                format!("{extranonce1:08x}"),
                 8
             ]),
             Message::Authorize(_) => json!(true),
