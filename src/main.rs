@@ -15,7 +15,7 @@ async fn main() -> std::io::Result<()> {
     loop {
         let (stream, address) = listener.accept().await?;
         println!("connection from {address}");
-        handle_connection(stream).await;
+        tokio::spawn(handle_connection(stream));
     }
 }
 
