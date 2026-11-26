@@ -60,7 +60,11 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
         };
 
         println!("received message: {message:?}");
-        let is_authorize = matches!(message, Message::Authorize(_));
+        let new_difficulty = match &message {
+            Message::Authorize(_) => Some(1.0),
+            Message::SuggestDifficulty(suggestion) => Some(suggestion.difficulty.max(1.0)),
+            _ => None // no difficulty to send
+        };
         let result = match message {
             Message::Subscribe(_) => json!([
                 [["mining.set_difficulty", "1"], ["mining.notify", "1"]],
@@ -69,6 +73,7 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
             ]),
             Message::Authorize(_) => json!(true),
             Message::Submit(_) => json!(true),
+            Message::SuggestDifficulty(_) => json!(true),
         };
 
         let response = stratum::Response {
@@ -81,16 +86,16 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
             break
         };
 
-        if is_authorize {
+        if let Some(difficulty) = new_difficulty {
             let notification = stratum::Request {
                 id: json!(null),
                 method: "mining.set_difficulty".to_string(),
-                params: vec![json!(1)],
+                params: vec![json!(difficulty)],
             };
 
             if !send_response(&mut writer, &notification).await {
-                break
-            };
+                break;
+            }
         }
     }
 

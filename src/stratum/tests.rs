@@ -193,3 +193,25 @@ fn serializes_set_difficulty_notification() {
         r#"{"id":null,"method":"mining.set_difficulty","params":[512]}"#
     )
 }
+
+#[test]
+fn parses_suggest_difficulty() {
+    let line = r#"{"id":4,"method":"mining.suggest_difficulty","params":[1000]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    let suggestion = parse_suggest_difficulty(&request).unwrap();
+    assert_eq!(suggestion.difficulty, 1000.0);
+}
+
+#[test]
+fn rejects_suggest_difficulty_without_value() {
+    let line = r#"{"id":4,"method":"mining.suggest_difficulty","params":[]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    assert!(parse_suggest_difficulty(&request).is_err());
+}
+
+#[test]
+fn rejects_suggest_difficulty_with_non_number() {
+    let line = r#"{"id":4,"method":"mining.suggest_difficulty","params":["1000"]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    assert!(parse_suggest_difficulty(&request).is_err());
+}

@@ -33,6 +33,7 @@ pub enum Message {
     Subscribe(Subscribe),
     Authorize(Authorize),
     Submit(Submit),
+    SuggestDifficulty(SuggestDifficulty),
 }
 
 #[derive(Debug, Serialize)]
@@ -40,6 +41,11 @@ pub struct Response {
     pub id: Value,
     pub result: Value,
     pub error: Value,
+}
+
+#[derive(Debug)]
+pub struct SuggestDifficulty {
+    pub difficulty: f64,
 }
 
 fn parse_subscribe(request: &Request) -> Result<Subscribe, String> {
@@ -77,6 +83,7 @@ pub fn parse_message(request: &Request) -> Result<Message, String> {
         "mining.subscribe" => Ok(Message::Subscribe(parse_subscribe(request)?)),
         "mining.authorize" => Ok(Message::Authorize(parse_authorize(request)?)),
         "mining.submit" => Ok(Message::Submit(parse_submit(request)?)),
+        "mining.suggest_difficulty" => Ok(Message::SuggestDifficulty(parse_suggest_difficulty(request)?)),
         _ => Err(format!("unsupported method: {}", request.method)),
     }
 }
@@ -103,6 +110,16 @@ fn extract_optional_field(
             None => Err(format!("{field} must be a string")),
             Some(text) => Ok(Some(text.to_string())),
         },
+    }
+}
+
+fn parse_suggest_difficulty(request: &Request) -> Result<SuggestDifficulty, String> {
+    match request.params.get(0) {
+        None => Err("difficulty cannot be empty".to_string()),
+        Some(value) => match value.as_f64() { // is it a number?
+            None => Err("difficulty must be a number".to_string()),
+            Some(difficulty) => Ok(SuggestDifficulty { difficulty }),
+        }
     }
 }
 
