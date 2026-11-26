@@ -1,5 +1,6 @@
+use serde::Serialize;
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
-use tokio::net::tcp::OwnedReadHalf;
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::{TcpListener, TcpStream};
 
 use serde_json::json;
@@ -50,11 +51,9 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
                     error: json!([20, error, null]),
                 };
 
-                let text = serde_json::to_string(&response).unwrap();
-                if let Err(error) = writer.write_all(format!("{text}\n").as_bytes()).await {
-                    println!("write failed: {error}");
-                    break;
-                }
+                if !send_response(&mut writer, &response).await {
+                    break
+                };
 
                 continue;
             }
@@ -78,11 +77,9 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
             error: json!(null),
         };
 
-        let text = serde_json::to_string(&response).unwrap();
-        if let Err(error) = writer.write_all(format!("{text}\n").as_bytes()).await {
-            println!("write failed: {error}");
-            break;
-        }
+        if !send_response(&mut writer, &response).await {
+            break
+        };
 
         if is_authorize {
             let notification = stratum::Request {
@@ -90,11 +87,10 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
                 method: "mining.set_difficulty".to_string(),
                 params: vec![json!(1)],
             };
-            let text = serde_json::to_string(&notification).unwrap();
-            if let Err(error) = writer.write_all(format!("{text}\n").as_bytes()).await {
-                println!("write failed: {error}");
-                break;
-            }
+
+            if !send_response(&mut writer, &notification).await {
+                break
+            };
         }
     }
 
@@ -115,6 +111,18 @@ async fn read_line(reader: &mut BufReader<OwnedReadHalf>) -> Option<String> {
         Err(error) => {
             println!("read failed: {error}");
             None
+        }
+    }
+}
+
+async fn send_response(writer: &mut OwnedWriteHalf, message: &impl Serialize) -> bool {
+    let text = serde_json::to_string(&message).unwrap();
+
+    match writer.write_all(format!("{text}\n").as_bytes()).await {
+        Ok(()) => true,
+        Err(error) => {
+            println!("write failed: {error}");
+            false
         }
     }
 }
