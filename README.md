@@ -8,16 +8,17 @@ It is not ready for real mining. Do not point hardware at it on mainnet.
 
 ## Status
 
-The pool can read and parse what a miner sends, and answers each message
-according to its type. Several miners can be connected at once, each with its
-own `extranonce1`. Authorize and submit are not checked yet: both always get
-`true`.
+The pool holds a full opening conversation with a real miner (tested with a
+Bitaxe): configure, subscribe, authorize and difficulty. Several miners can be
+connected at once, each with its own `extranonce1`. It cannot hand out work
+yet, so no mining happens. Authorize and submit are not checked: both always
+get `true`.
 
 | Stage | What | Status |
 | --- | --- | --- |
 | 1 | Project setup | Done |
 | 2 | Stratum message codec | Done |
-| 3 | TCP listener | In progress |
+| 3 | TCP listener | Done |
 | 4 | Share validation | Not started |
 | 5 | Bitcoin Core integration | Not started |
 
@@ -59,8 +60,8 @@ The second terminal receives the reply:
 {"id":1,"result":[[["mining.set_difficulty","1"],["mining.notify","1"]],"00000001",8],"error":null}
 ```
 
-A line that is not valid, such as `GET / HTTP/1.1`, prints an error and the
-listener carries on. It gets no reply yet.
+A line that is not JSON, such as `GET / HTTP/1.1`, prints an error and the
+listener carries on. A request the pool cannot handle gets an error reply.
 
 ## Layout
 
@@ -79,8 +80,8 @@ docs/captures.md       Traffic captured from real miners
    `params`). Anything that is not a JSON-RPC request is rejected here.
 2. `parse_message` reads `method` and picks the parser for it. An unknown
    method is an error.
-3. The parser turns the positional `params` into a typed `Subscribe`,
-   `Authorize` or `Submit`.
+3. The parser turns the positional `params` into a typed message: `Configure`,
+   `Subscribe`, `Authorize`, `SuggestDifficulty` or `Submit`.
 
 A bad line always becomes an error to log. It never panics the server. A line
 longer than 4,096 bytes closes that connection.

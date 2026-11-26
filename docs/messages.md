@@ -13,10 +13,12 @@ that stays open.
 
 | Message | Direction | Meaning | Status |
 | --- | --- | --- | --- |
+| `mining.configure` | Miner to pool | "Here are the extras I support" | Handled: version rolling |
 | `mining.subscribe` | Miner to pool | "I'm here and I want work" | Handled; each connection gets its own `extranonce1` |
 | `mining.authorize` | Miner to pool | "This is who I am" | Handled, always answers `true` |
+| `mining.suggest_difficulty` | Miner to pool | "I'd prefer this difficulty" | Handled |
 | `mining.submit` | Miner to pool | "I found a good one" | Parsed, always answers `true`; not checked yet |
-| `mining.set_difficulty` | Pool to miner | "Only show me tickets this good" | Sent after authorize, fixed at 1 |
+| `mining.set_difficulty` | Pool to miner | "Only show me tickets this good" | Sent after authorize (1) and after a suggestion |
 | `mining.notify` | Pool to miner | "Here's the job" | Not sent yet |
 
 ## Miner to pool
@@ -146,9 +148,47 @@ miner: submit             ->  pool: true
 The pool handles the first three lines today. See [stages.md](stages.md) for
 what comes next.
 
-## Not covered here
+## Negotiation messages
 
-Real hardware also sends `mining.configure` (to negotiate version rolling),
-`mining.suggest_difficulty` and sometimes `mining.extranonce.subscribe`. The
-pool rejects all three as unsupported methods for now. A real session with the
-first two is in [captures.md](captures.md).
+Real hardware sends two more requests while connecting. A real session with
+both is in [captures.md](captures.md).
+
+### `mining.configure`: "Here are the extras I support"
+
+Sent first, before subscribe. The miner lists optional extensions and their
+settings. The one in use is version rolling: permission to change some bits of
+the block header's version field, as one more thing to vary besides the nonce
+and `extranonce2`.
+
+```
+{"id":1,"method":"mining.configure","params":[["version-rolling"],{"version-rolling.mask":"ffffffff"}]}
+```
+
+The mask says which of the 32 version bits the miner can change; a 1 means
+"this bit". The pool has its own mask, `1fffe000`, the 16 bits that are safe to
+change. It answers with the bits both masks share:
+
+```
+{"id":1,"result":{"version-rolling":true,"version-rolling.mask":"1fffe000"},"error":null}
+```
+
+### `mining.suggest_difficulty`: "I'd prefer this difficulty"
+
+A request, not a command. The pool answers `true`, then sends
+`mining.set_difficulty` with the suggested value, never lower than 1.
+
+```
+{"id":4,"method":"mining.suggest_difficulty","params":[1000]}
+```
+
+## Unsupported requests
+
+A request the pool does not handle, or one with bad params, gets an error
+reply: a null result and `[code, message, null]`.
+
+```
+{"id":1,"result":null,"error":[20,"unsupported method: mining.foo",null]}
+```
+
+`mining.extranonce.subscribe`, which some miners send, is answered this way
+for now.

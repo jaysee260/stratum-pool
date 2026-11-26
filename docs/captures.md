@@ -5,7 +5,9 @@ lines starting with `<-` are exactly what the miner sent.
 
 The payout address in the worker name is replaced with `<address>`.
 
-## Bitaxe (BM1370, firmware v2.15.4), Nov 25, 2026
+## Bitaxe (BM1370, firmware v2.15.4), Nov 25, 2026: first contact
+
+The pool handled subscribe and authorize only.
 
 ```
 connection from 192.168.1.x:58104
@@ -62,3 +64,39 @@ version bits it chose.
 
 **`mining.suggest_difficulty`** is a request, not a command. The pool may
 honour it by sending `mining.set_difficulty` with that value, or ignore it.
+
+## Bitaxe (BM1370, firmware v2.15.4), Nov 26, 2026: every message answered
+
+The same miner after the pool learned `mining.configure` and
+`mining.suggest_difficulty`. Nothing is rejected.
+
+```
+connection from 192.168.1.x:52647
+<- {"id":1,"method":"mining.configure","params":[["version-rolling"],{"version-rolling.mask":"ffffffff"}]}
+received message: Configure(Configure { version_rolling_mask: Some(4294967295) })
+<- {"id":2,"method":"mining.subscribe","params":["bitaxe/BM1370/v2.15.4"]}
+received message: Subscribe(Subscribe { user_agent: Some("bitaxe/BM1370/v2.15.4") })
+<- {"id":3,"method":"mining.authorize","params":["<address>.humble_gamma1","x"]}
+received message: Authorize(Authorize { worker_name: "<address>.humble_gamma1", password: Some("x") })
+<- {"id":4,"method":"mining.suggest_difficulty","params":[1000]}
+received message: SuggestDifficulty(SuggestDifficulty { difficulty: 1000.0 })
+```
+
+`4294967295` is the mask `ffffffff` as a decimal number.
+
+What the pool sent back, in order. The log does not record outgoing lines, so
+these are the replies the code produces for those four messages, as checked by
+hand with netcat:
+
+```
+{"id":1,"result":{"version-rolling":true,"version-rolling.mask":"1fffe000"},"error":null}
+{"id":2,"result":[[["mining.set_difficulty","1"],["mining.notify","1"]],"<extranonce1>",8],"error":null}
+{"id":3,"result":true,"error":null}
+{"id":null,"method":"mining.set_difficulty","params":[1.0]}
+{"id":4,"result":true,"error":null}
+{"id":null,"method":"mining.set_difficulty","params":[1000.0]}
+```
+
+The miner sends the same four messages as before and then waits. It now has
+everything except a job: `mining.notify` is the next thing the pool must learn
+to send.

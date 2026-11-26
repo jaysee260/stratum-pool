@@ -1,6 +1,6 @@
 # Build stages
 
-Last updated: Nov 25, 2026.
+Last updated: Nov 26, 2026.
 
 The pool is built in stages, each one small enough to finish and test before
 the next begins. Update the status and checklists here as work lands.
@@ -9,7 +9,7 @@ the next begins. Update the status and checklists here as work lands.
 | --- | --- | --- |
 | 1 | Project setup | Done |
 | 2 | Stratum message codec | Done |
-| 3 | TCP listener | In progress |
+| 3 | TCP listener | Done |
 | 4 | Share validation | Not started |
 | 5 | Bitcoin Core integration | Not started |
 | 6 | Job management | Not started |
@@ -43,18 +43,18 @@ replies back into lines.
       error
 - [x] `Response` serialization (`id`, `result`, `error`)
 - [x] Notification serialization (`mining.set_difficulty` shape)
-- [x] 22 tests, in `src/stratum/tests.rs`
+- [x] 29 tests, in `src/stratum/tests.rs`
 
 Left for later stages:
 
 - [ ] Typed `mining.notify` builder (needs a block template; stages 4 and 5)
-- [ ] `mining.configure` and version rolling (stage 3)
+- [x] `mining.configure` and version rolling (done in stage 3)
 - [ ] Decode and validate the hex fields in `mining.submit` (stage 4)
 - [ ] A typed error with Stratum error codes, replacing `String`
 
 ## Stage 3: TCP listener
 
-**Status: In progress**
+**Status: Done**
 
 Accept a miner's connection and hold a conversation with it.
 
@@ -74,11 +74,18 @@ Accept a miner's connection and hold a conversation with it.
 - [x] Listen on `0.0.0.0` so other devices can connect
 - [x] Capture traffic from a real miner (see [captures.md](captures.md))
 
-Found by the capture, still to do:
+Found by the capture:
 
-- [ ] Answer an unsupported method with an error, not silence
-- [ ] Handle `mining.suggest_difficulty`
-- [ ] Handle `mining.configure` (version rolling)
+- [x] Answer an unsupported method with an error, not silence
+- [x] Handle `mining.suggest_difficulty`
+- [x] Handle `mining.configure` (version rolling)
+- [x] A real Bitaxe gets an answer to every message it sends
+
+Left for later stages:
+
+- [ ] Send `mining.notify`, the first job (stages 4 and 5)
+- [ ] Remember the agreed version mask for each connection (stage 8)
+- [ ] Capture traffic from the Avalon Nano 3S and the Heatbit
 
 ## Stage 4: Share validation
 
