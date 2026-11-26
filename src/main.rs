@@ -43,6 +43,19 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
             Ok(message) => message,
             Err(error) => {
                 println!("not a message: {error}");
+
+                let response = stratum::Response {
+                    id: request.id.clone(),
+                    result: json!(null),
+                    error: json!([20, error, null]),
+                };
+
+                let text = serde_json::to_string(&response).unwrap();
+                if let Err(error) = writer.write_all(format!("{text}\n").as_bytes()).await {
+                    println!("write failed: {error}");
+                    break;
+                }
+
                 continue;
             }
         };
