@@ -130,6 +130,7 @@ async fn read_line(reader: &mut BufReader<OwnedReadHalf>) -> Option<String> {
 
 async fn send_response(writer: &mut OwnedWriteHalf, message: &impl Serialize) -> bool {
     let text = serde_json::to_string(&message).unwrap();
+    println!("-> {text}");
 
     match writer.write_all(format!("{text}\n").as_bytes()).await {
         Ok(()) => true,

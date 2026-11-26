@@ -1,7 +1,8 @@
 # Captured miner traffic
 
 What real hardware sends when it connects. Each capture is the pool's own log:
-lines starting with `<-` are exactly what the miner sent.
+lines starting with `<-` are exactly what the miner sent, and lines starting
+with `->` are what the pool sent back.
 
 The payout address in the worker name is replaced with `<address>`.
 
@@ -68,35 +69,38 @@ honour it by sending `mining.set_difficulty` with that value, or ignore it.
 ## Bitaxe (BM1370, firmware v2.15.4), Nov 26, 2026: every message answered
 
 The same miner after the pool learned `mining.configure` and
-`mining.suggest_difficulty`. Nothing is rejected.
+`mining.suggest_difficulty`. Nothing is rejected. The pool now logs outgoing
+lines too, marked `->`, so this is the whole conversation in order.
 
 ```
-connection from 192.168.1.x:52647
+connection from 192.168.1.x:54234
 <- {"id":1,"method":"mining.configure","params":[["version-rolling"],{"version-rolling.mask":"ffffffff"}]}
 received message: Configure(Configure { version_rolling_mask: Some(4294967295) })
+-> {"id":1,"result":{"version-rolling":true,"version-rolling.mask":"1fffe000"},"error":null}
 <- {"id":2,"method":"mining.subscribe","params":["bitaxe/BM1370/v2.15.4"]}
 received message: Subscribe(Subscribe { user_agent: Some("bitaxe/BM1370/v2.15.4") })
+-> {"id":2,"result":[[["mining.set_difficulty","1"],["mining.notify","1"]],"00000001",8],"error":null}
 <- {"id":3,"method":"mining.authorize","params":["<address>.humble_gamma1","x"]}
 received message: Authorize(Authorize { worker_name: "<address>.humble_gamma1", password: Some("x") })
+-> {"id":3,"result":true,"error":null}
+-> {"id":null,"method":"mining.set_difficulty","params":[1.0]}
 <- {"id":4,"method":"mining.suggest_difficulty","params":[1000]}
 received message: SuggestDifficulty(SuggestDifficulty { difficulty: 1000.0 })
+-> {"id":4,"result":true,"error":null}
+-> {"id":null,"method":"mining.set_difficulty","params":[1000.0]}
 ```
 
 `4294967295` is the mask `ffffffff` as a decimal number.
 
-What the pool sent back, in order. The log does not record outgoing lines, so
-these are the replies the code produces for those four messages, as checked by
-hand with netcat:
+### What it shows
 
-```
-{"id":1,"result":{"version-rolling":true,"version-rolling.mask":"1fffe000"},"error":null}
-{"id":2,"result":[[["mining.set_difficulty","1"],["mining.notify","1"]],"<extranonce1>",8],"error":null}
-{"id":3,"result":true,"error":null}
-{"id":null,"method":"mining.set_difficulty","params":[1.0]}
-{"id":4,"result":true,"error":null}
-{"id":null,"method":"mining.set_difficulty","params":[1000.0]}
-```
-
-The miner sends the same four messages as before and then waits. It now has
-everything except a job: `mining.notify` is the next thing the pool must learn
-to send.
+- **Each request gets one reply with the same id.** Ids 1 to 4 each have a
+  matching `->` line.
+- **Two requests also trigger a notification.** Authorize and
+  suggest_difficulty are each followed by a `mining.set_difficulty` with a
+  null id.
+- **The difficulty is set twice.** The pool sends 1 after authorize, then the
+  miner asks for 1000 and gets it. Sending the suggested value once would be
+  tidier, but the miner asks only after it has authorized.
+- **Then the miner waits.** It has everything except a job. `mining.notify`
+  is the next thing the pool must learn to send.
