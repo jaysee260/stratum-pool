@@ -48,7 +48,7 @@ replies back into lines.
 Left for later stages:
 
 - [ ] Typed `mining.notify` builder (needs a block template; stages 4 and 5)
-- [ ] `mining.configure` and version rolling (stage 8)
+- [ ] `mining.configure` and version rolling (stage 3)
 - [ ] Decode and validate the hex fields in `mining.submit` (stage 4)
 - [ ] A typed error with Stratum error codes, replacing `String`
 
@@ -58,7 +58,7 @@ Left for later stages:
 
 Accept a miner's connection and hold a conversation with it.
 
-- [x] Listen on `127.0.0.1:3333` and accept a connection
+- [x] Listen on port 3333 and accept a connection
 - [x] Read the connection line by line
 - [x] Parse each line and log the typed message
 - [x] Log bad lines as errors and keep the connection going
@@ -71,8 +71,14 @@ Accept a miner's connection and hold a conversation with it.
 - [x] Handle several connections at once (move to tokio)
 - [x] Give each connection its own `extranonce1`
 - [x] Limit the length of a line (4,096 bytes)
-- [ ] Listen on `0.0.0.0` so other devices can connect
-- [ ] Capture traffic from a real miner
+- [x] Listen on `0.0.0.0` so other devices can connect
+- [x] Capture traffic from a real miner (see [captures.md](captures.md))
+
+Found by the capture, still to do:
+
+- [ ] Answer an unsupported method with an error, not silence
+- [ ] Handle `mining.suggest_difficulty`
+- [ ] Handle `mining.configure` (version rolling)
 
 ## Stage 4: Share validation
 
@@ -122,7 +128,8 @@ Get real work from a node and hand found blocks back to it.
 
 **Status: Not started**
 
-- [ ] `mining.configure` and version rolling (BIP 310)
+- [ ] Accept the version bits a miner sends as the sixth `mining.submit` param
+      (BIP 310)
 - [ ] Real miners run for a week; every block found is accepted
 
 ## Stage 9: Dashboard and operations

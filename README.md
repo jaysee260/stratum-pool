@@ -33,8 +33,8 @@ Run the tests:
 cargo test
 ```
 
-Run the listener, which accepts connections on port 3333, prints each message
-it receives and replies to it:
+Run the listener, which accepts connections on port 3333 from any device on
+the network, prints each message it receives and replies to it:
 
 ```
 cargo run
@@ -70,6 +70,7 @@ src/stratum.rs         Stratum messages: types, parsers, serialization
 src/stratum/tests.rs   Tests for the codec
 docs/stages.md         Build stages and their status
 docs/messages.md       What each Stratum message means
+docs/captures.md       Traffic captured from real miners
 ```
 
 ## How a line is handled

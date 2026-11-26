@@ -12,8 +12,8 @@ const MAX_LINE_BYTES: u64 = 4096;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:3333").await?;
-    println!("listening on 127.0.0.1:3333");
+    let listener = TcpListener::bind("0.0.0.0:3333").await?;
+    println!("listening on 0.0.0.0:3333");
     let mut next_id: u32 = 1;
 
     loop {
@@ -29,6 +29,7 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
     let mut reader = BufReader::new(reader);
 
     while let Some(line) = read_line(&mut reader).await {
+        println!("<- {}", line.trim_end());
         // todo: parse_line
         let request: stratum::Request = match serde_json::from_str(&line) {
             Ok(request) => request,

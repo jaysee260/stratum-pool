@@ -148,6 +148,7 @@ what comes next.
 
 ## Not covered here
 
-Real hardware also sends `mining.configure` (to negotiate version rolling) and
-`mining.extranonce.subscribe`. The pool rejects both as unsupported methods for
-now.
+Real hardware also sends `mining.configure` (to negotiate version rolling),
+`mining.suggest_difficulty` and sometimes `mining.extranonce.subscribe`. The
+pool rejects all three as unsupported methods for now. A real session with the
+first two is in [captures.md](captures.md).
