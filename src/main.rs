@@ -10,6 +10,7 @@ use crate::stratum::{parse_message, Message};
 mod stratum;
 
 const MAX_LINE_BYTES: u64 = 4096;
+const VERSION_ROLLING_MASK: u32 = 0x1fffe000;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -74,6 +75,13 @@ async fn handle_connection(stream: TcpStream, extranonce1: u32) {
             Message::Authorize(_) => json!(true),
             Message::Submit(_) => json!(true),
             Message::SuggestDifficulty(_) => json!(true),
+            Message::Configure(configure) => match configure.version_rolling_mask {
+                None => json!({}),
+                Some(mask) => json!({
+                    "version-rolling": true,
+                    "version-rolling.mask": format!("{:08x}", mask & VERSION_ROLLING_MASK),
+                })
+            },
         };
 
         let response = stratum::Response {

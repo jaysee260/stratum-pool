@@ -215,3 +215,33 @@ fn rejects_suggest_difficulty_with_non_number() {
     let request: Request = serde_json::from_str(line).unwrap();
     assert!(parse_suggest_difficulty(&request).is_err());
 }
+
+#[test]
+fn parses_configure_with_version_rolling() {
+    let line = r#"{"id":1,"method":"mining.configure","params":[["version-rolling"],{"version-rolling.mask":"ffffffff"}]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    let configure = parse_configure(&request).unwrap();
+    assert_eq!(configure.version_rolling_mask, Some(0xffffffff));
+}
+
+#[test]
+fn parses_configure_without_version_rolling() {
+    let line = r#"{"id":1,"method":"mining.configure","params":[[],{}]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    let configure = parse_configure(&request).unwrap();
+    assert!(configure.version_rolling_mask.is_none());
+}
+
+#[test]
+fn rejects_configure_with_non_string_mask() {
+    let line = r#"{"id":1,"method":"mining.configure","params":[["version-rolling"],{"version-rolling.mask":42}]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    assert!(parse_configure(&request).is_err());
+}
+
+#[test]
+fn rejects_configure_with_non_hex_mask() {
+    let line = r#"{"id":1,"method":"mining.configure","params":[["version-rolling"],{"version-rolling.mask":"zzzz"}]}"#;
+    let request: Request = serde_json::from_str(line).unwrap();
+    assert!(parse_configure(&request).is_err());
+}

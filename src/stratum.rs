@@ -34,6 +34,7 @@ pub enum Message {
     Authorize(Authorize),
     Submit(Submit),
     SuggestDifficulty(SuggestDifficulty),
+    Configure(Configure),
 }
 
 #[derive(Debug, Serialize)]
@@ -46,6 +47,11 @@ pub struct Response {
 #[derive(Debug)]
 pub struct SuggestDifficulty {
     pub difficulty: f64,
+}
+
+#[derive(Debug)]
+pub struct Configure {
+    pub version_rolling_mask: Option<u32>,
 }
 
 fn parse_subscribe(request: &Request) -> Result<Subscribe, String> {
@@ -84,6 +90,7 @@ pub fn parse_message(request: &Request) -> Result<Message, String> {
         "mining.authorize" => Ok(Message::Authorize(parse_authorize(request)?)),
         "mining.submit" => Ok(Message::Submit(parse_submit(request)?)),
         "mining.suggest_difficulty" => Ok(Message::SuggestDifficulty(parse_suggest_difficulty(request)?)),
+        "mining.configure" => Ok(Message::Configure(parse_configure(request)?)),
         _ => Err(format!("unsupported method: {}", request.method)),
     }
 }
@@ -119,6 +126,29 @@ fn parse_suggest_difficulty(request: &Request) -> Result<SuggestDifficulty, Stri
         Some(value) => match value.as_f64() { // is it a number?
             None => Err("difficulty must be a number".to_string()),
             Some(difficulty) => Ok(SuggestDifficulty { difficulty }),
+        }
+    }
+}
+
+fn parse_configure(request: &Request) -> Result<Configure, String> {
+    // 1. the settings object is the second param
+    let mask = match request.params.get(1) {
+        None => None,
+        Some(settings) => settings.get("version-rolling.mask"),
+    };
+
+    // 2. no mask means the miner didn't ask for version rolling
+    let value = match mask {
+        None => return Ok(Configure { version_rolling_mask: None }),
+        Some(value) => value,
+    };
+
+    // 3. the mask must be hex text; turn it into a number
+    match value.as_str() {
+        None => Err("version-rolling.mask must be a string".to_string()),
+        Some(text) => match u32::from_str_radix(text, 16) {
+            Err(_) => Err("version-rolling.mask must be hex".to_string()), // is it in hex format?
+            Ok(mask) => Ok(Configure { version_rolling_mask: Some(mask) }),
         }
     }
 }
